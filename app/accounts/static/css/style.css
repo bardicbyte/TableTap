@@ -1,0 +1,62 @@
+:root {
+    --dark-bg: #1a1a2e;
+    --nav-bg: #16213e;
+    --accent-blue: #0f3460;
+    --text-color: #e1e1e1;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--text-color);
+    min-height: 100vh);
+}
+
+.navbar {
+    background-color: var(--nav-bg) !important;
+    box-shadow: var(--card-shadow);
+}
+
+.auth-card {
+    background-color: var(--nav-bg);
+    border: 1px solid var(--accent-blue);
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.btn-primary {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    padding: 0.5rem 1.5rem;
+    border-radius: 5px;
+}
+
+.btn-primary:hover {
+    background-color: #185690;
+    border-color: #185690;
+}
+
+.form-control {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+}
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-blue);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.25rem rgba(15, 52, 96, 0.25);
+}
+
+.link-light {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.link-light:hover {
+    color: #fff;
+    text-decoration: underline;
+} 

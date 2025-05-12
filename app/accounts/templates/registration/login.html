@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-card">
+    <h2 class="text-center mb-4">Welcome Back</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field.errors }}
+                {{ field|default:"form-control" }}
+            </div>
+        {% endfor %}
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Sign In</button>
+        </div>
+        <input type="hidden" name="next" value="{% url 'accounts:dashboard' %}" />
+    </form>
+    <div class="text-center mt-3">
+        <p>Don't have an account? <a href="{% url 'accounts:sign_up' %}" class="link-light">Sign up</a></p>
+    </div>
+</div>
+{% endblock content %}
