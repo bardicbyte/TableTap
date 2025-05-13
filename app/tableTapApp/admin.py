@@ -1,7 +1,5 @@
 from django.contrib import admin
 from .models import (
-    Users,
-    Roles,
     Business,
     Tables,
     Menu_Categories,
@@ -10,14 +8,9 @@ from .models import (
     Orders,
     Order_Items,
     Table_Sessions,
-    Order_Item_Options
+    Order_Item_Options,
+    Subscription
 )
-
-@admin.register(Users)
-class UsersAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'created_at')
-    search_fields = ('username', 'email')
-    list_filter = ('created_at',)
 
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
@@ -43,9 +36,19 @@ class OrderItemsAdmin(admin.ModelAdmin):
     search_fields = ('order__id', 'menu_item__name')
 
 # Register remaining models with basic configuration
-admin.site.register(Roles)
 admin.site.register(Tables)
 admin.site.register(Menu_Categories)
 admin.site.register(Item_Options)
 admin.site.register(Table_Sessions)
 admin.site.register(Order_Item_Options)
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'plan', 'start_date', 'end_date', 'is_active', 'archived')
+    list_filter = ('plan', 'is_active', 'archived', 'start_date')
+    search_fields = ('user__username', 'plan')
+    actions = ['archive_subscriptions']
+
+    def archive_subscriptions(self, request, queryset):
+        queryset.update(archived=True, is_active=False)
+    archive_subscriptions.short_description = "Archive selected subscriptions"

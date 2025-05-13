@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Management - TableTap</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --accent-color: #3498db;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: var(--primary-color) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #c0392b;
+            border-color: #c0392b;
+        }
+
+        .menu-card {
+            border: none;
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .menu-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .status-active {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .status-inactive {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .modal-content {
+            border-radius: 15px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">TableTap</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/menu-management">Menus</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/accounts/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Menu Management</h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createMenuModal">
+                <i class="fas fa-plus"></i> Create New Menu
+            </button>
+        </div>
+
+        <!-- Menu List -->
+        <div class="row">
+            {% for menu in menus %}
+            <div class="col-md-6 col-lg-4">
+                {% include 'tableTapApp/_menu_card.html' %}
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No menus found. Create your first menu to get started!
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Create Menu Modal -->
+    <div class="modal fade" id="createMenuModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{% url 'tableTapApp:create_menu' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="menuName" class="form-label">Menu Name</label>
+                            <input type="text" class="form-control" id="menuName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="menuDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="menuDescription" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="menuActive" name="is_active" checked>
+                                <label class="form-check-label" for="menuActive">
+                                    Active Menu
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Menu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Menu Modal -->
+    <div class="modal fade" id="editMenuModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" id="editMenuForm">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editMenuName" class="form-label">Menu Name</label>
+                            <input type="text" class="form-control" id="editMenuName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editMenuDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editMenuDescription" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="editMenuActive" name="is_active">
+                                <label class="form-check-label" for="editMenuActive">
+                                    Active Menu
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Detail Modal -->
+    {% include 'tableTapApp/_menu_detail_modal.html' %}
+
+    <!-- Create Category Modal -->
+    <div class="modal fade" id="createCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="createCategoryForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="createCategoryMenuId" name="menu_id">
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="categoryName" name="name" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Category</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editCategoryForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="editCategoryId" name="category_id">
+                        <input type="hidden" id="editCategoryMenuId" name="menu_id">
+                        <div class="mb-3">
+                            <label for="editCategoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="editCategoryName" name="name" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Item Modal -->
+    <div class="modal fade" id="itemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemModalTitle">Add Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="itemForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="itemId" name="item_id">
+                        <input type="hidden" id="itemCategoryId" name="category_id">
+                        <div class="mb-3">
+                            <label for="itemName" class="form-label">Item Name</label>
+                            <input type="text" class="form-control" id="itemName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="itemDescription" name="description" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemPrice" class="form-label">Price</label>
+                            <input type="number" step="0.01" class="form-control" id="itemPrice" name="price" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemImageUrl" class="form-label">Image URL</label>
+                            <input type="url" class="form-control" id="itemImageUrl" name="image_url">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="itemModalSubmit">Add Item</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="modal fade" id="qrModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrModalTitle">Menu QR Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="qrImage" src="" alt="QR Code" style="max-width: 100%; height: auto; margin-bottom: 1rem;" />
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" id="qrMenuLink" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyQrLink()">Copy Link</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'tableTapApp/_category_modals.html' %}
+    {% include 'tableTapApp/_item_modals.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function editMenu(menuId) {
+            // Fetch menu data and populate the edit form
+            fetch(`/api/menus/${menuId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('editMenuName').value = data.name;
+                    document.getElementById('editMenuDescription').value = data.description;
+                    document.getElementById('editMenuActive').checked = data.is_active;
+                    document.getElementById('editMenuForm').action = `/api/menus/${menuId}/update/`;
+                    
+                    new bootstrap.Modal(document.getElementById('editMenuModal')).show();
+                });
+        }
+
+        function deleteMenu(menuId) {
+            if (confirm('Are you sure you want to delete this menu?')) {
+                fetch(`/api/menus/${menuId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                });
+            }
+        }
+
+        function openMenuDetail(menuId) {
+            // Fetch categories and items for this menu via AJAX
+            fetch(`/api/menus/${menuId}/detail/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('menuDetailTitle').innerText = data.menu.name + ' - Categories & Items';
+                    let html = '';
+                    html += `<button class='btn btn-primary mb-3' onclick='showCreateCategoryModal(${menuId})'><i class='fas fa-plus'></i> Add Category</button>`;
+                    if (data.categories.length === 0) {
+                        html += `<div class='alert alert-info'>No categories yet. Add your first category!</div>`;
+                    }
+                    data.categories.forEach(cat => {
+                        html += `<div class='card mb-3'>
+                            <div class='card-header d-flex justify-content-between align-items-center'>
+                                <span><b>${cat.name}</b></span>
+                                <div>
+                                    <button class='btn btn-sm btn-outline-primary' onclick='showEditCategoryModal(${cat.id}, "${cat.name}", event)'><i class='fas fa-edit'></i></button>
+                                    <button class='btn btn-sm btn-outline-danger' onclick='deleteCategory(${cat.id}, ${menuId}, event)'><i class='fas fa-trash'></i></button>
+                                    <button class='btn btn-sm btn-success ms-2' onclick='showCreateItemModal(${cat.id}, event)'><i class='fas fa-plus'></i> Add Item</button>
+                                </div>
+                            </div>
+                            <ul class='list-group list-group-flush'>`;
+                        if (cat.items.length === 0) {
+                            html += `<li class='list-group-item text-muted'>No items in this category.</li>`;
+                        }
+                        cat.items.forEach(item => {
+                            html += `<li class='list-group-item d-flex justify-content-between align-items-center'>
+                                <div>
+                                    <b>${item.name}</b> - $${item.price} <br><small>${item.description}</small>
+                                </div>
+                                <div>
+                                    <button class='btn btn-sm btn-outline-primary' onclick='showEditItemModal(${item.id}, event)'><i class='fas fa-edit'></i></button>
+                                    <button class='btn btn-sm btn-outline-danger' onclick='deleteItem(${item.id}, ${cat.id}, event)'><i class='fas fa-trash'></i></button>
+                                </div>
+                            </li>`;
+                        });
+                        html += `</ul></div>`;
+                    });
+                    document.getElementById('menuDetailContent').innerHTML = html;
+                    new bootstrap.Modal(document.getElementById('menuDetailModal')).show();
+                });
+        }
+
+        function showCreateCategoryModal(menuId) {
+            document.getElementById('createCategoryMenuId').value = menuId;
+            document.getElementById('categoryName').value = '';
+            new bootstrap.Modal(document.getElementById('createCategoryModal')).show();
+        }
+
+        document.getElementById('createCategoryForm').onsubmit = function(e) {
+            e.preventDefault();
+            const menuId = document.getElementById('createCategoryMenuId').value;
+            const name = document.getElementById('categoryName').value;
+            fetch(`/api/menus/${menuId}/categories/create/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ name })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('createCategoryModal')).hide();
+                    openMenuDetail(menuId); // Refresh the modal content
+                } else {
+                    alert('Error: ' + (data.error || 'Could not create category.'));
+                }
+            });
+        };
+
+        function showEditCategoryModal(catId, catName, event) {
+            event.stopPropagation();
+            document.getElementById('editCategoryId').value = catId;
+            document.getElementById('editCategoryName').value = catName;
+            // Find the menuId from the currently open menu detail modal
+            const menuId = document.getElementById('menuDetailContent').querySelector('button.btn-primary').getAttribute('onclick').match(/\d+/)[0];
+            document.getElementById('editCategoryMenuId').value = menuId;
+            new bootstrap.Modal(document.getElementById('editCategoryModal')).show();
+        }
+
+        document.getElementById('editCategoryForm').onsubmit = function(e) {
+            e.preventDefault();
+            const catId = document.getElementById('editCategoryId').value;
+            const menuId = document.getElementById('editCategoryMenuId').value;
+            const name = document.getElementById('editCategoryName').value;
+            fetch(`/api/categories/${catId}/edit/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ name })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
+                    openMenuDetail(menuId); // Refresh the modal content
+                } else {
+                    alert('Error: ' + (data.error || 'Could not update category.'));
+                }
+            });
+        };
+
+        function deleteCategory(catId, menuId, event) {
+            event.stopPropagation();
+            if(confirm('Delete this category?')) {
+                fetch(`/api/categories/${catId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        openMenuDetail(menuId); // Refresh the modal content
+                    } else {
+                        alert('Error: ' + (data.error || 'Could not delete category.'));
+                    }
+                });
+            }
+        }
+
+        function showCreateItemModal(catId, event) {
+            event.stopPropagation();
+            document.getElementById('itemModalTitle').innerText = 'Add Item';
+            document.getElementById('itemModalSubmit').innerText = 'Add Item';
+            document.getElementById('itemId').value = '';
+            document.getElementById('itemCategoryId').value = catId;
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemDescription').value = '';
+            document.getElementById('itemPrice').value = '';
+            document.getElementById('itemImageUrl').value = '';
+            new bootstrap.Modal(document.getElementById('itemModal')).show();
+        }
+
+        function showEditItemModal(itemId, event) {
+            event.stopPropagation();
+            fetch(`/api/items/${itemId}/`) // Get item details
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('itemModalTitle').innerText = 'Edit Item';
+                    document.getElementById('itemModalSubmit').innerText = 'Save Changes';
+                    document.getElementById('itemId').value = data.id;
+                    document.getElementById('itemCategoryId').value = data.menu_category;
+                    document.getElementById('itemName').value = data.name;
+                    document.getElementById('itemDescription').value = data.description;
+                    document.getElementById('itemPrice').value = data.price;
+                    document.getElementById('itemImageUrl').value = data.image_url;
+                    new bootstrap.Modal(document.getElementById('itemModal')).show();
+                });
+        }
+
+        document.getElementById('itemForm').onsubmit = function(e) {
+            e.preventDefault();
+            const itemId = document.getElementById('itemId').value;
+            const catId = document.getElementById('itemCategoryId').value;
+            const name = document.getElementById('itemName').value;
+            const description = document.getElementById('itemDescription').value;
+            const price = document.getElementById('itemPrice').value;
+            const image_url = document.getElementById('itemImageUrl').value;
+            const url = itemId ? `/api/items/${itemId}/edit/` : `/api/categories/${catId}/items/create/`;
+            const method = 'POST';
+            fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ name, description, price, image_url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
+                    // Refresh the menu detail modal
+                    const menuId = document.getElementById('menuDetailContent').querySelector('button.btn-primary').getAttribute('onclick').match(/\d+/)[0];
+                    openMenuDetail(menuId);
+                } else {
+                    alert('Error: ' + (data.error || 'Could not save item.'));
+                }
+            });
+        };
+
+        function deleteItem(itemId, catId, event) {
+            event.stopPropagation();
+            if(confirm('Delete this item?')) {
+                fetch(`/api/items/${itemId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Refresh the menu detail modal
+                        const menuId = document.getElementById('menuDetailContent').querySelector('button.btn-primary').getAttribute('onclick').match(/\d+/)[0];
+                        openMenuDetail(menuId);
+                    } else {
+                        alert('Error: ' + (data.error || 'Could not delete item.'));
+                    }
+                });
+            }
+        }
+
+        function showQrModal(menuId, menuName) {
+            const link = `${window.location.origin}/menu/${menuId}/view/`;
+            document.getElementById('qrModalTitle').innerText = `${menuName} - QR Code`;
+            document.getElementById('qrImage').src = `/menu/${menuId}/qr/`;
+            document.getElementById('qrMenuLink').value = link;
+            new bootstrap.Modal(document.getElementById('qrModal')).show();
+        }
+
+        function copyQrLink() {
+            const input = document.getElementById('qrMenuLink');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+        }
+    </script>
+</body>
+</html> 

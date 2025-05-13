@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ menu.name }} - Menu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 350px;
+            height: 100vh;
+            background: #fff;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+            z-index: 1050;
+            padding: 2rem 1rem 1rem 1rem;
+            display: none;
+        }
+        .cart-sidebar.active {
+            display: block;
+        }
+        .cart-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.3);
+            z-index: 1049;
+            display: none;
+        }
+        .cart-backdrop.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="mb-4">{{ menu.name }}</h1>
+        <p>{{ menu.description }}</p>
+        <button class="btn btn-primary mb-3" onclick="showCart()">View Cart (<span id="cartCount">0</span>)</button>
+        {% for category in categories %}
+            <h3 class="mt-4">{{ category.name }}</h3>
+            <ul class="list-group mb-4">
+                {% for item in category.menu_items_set.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <b>{{ item.name }}</b> - ${{ item.price }}<br>
+                        <small>{{ item.description }}</small>
+                    </div>
+                    <div>
+                        <input type="number" min="1" value="1" id="qty-{{ item.id }}" style="width:60px;">
+                        <button class="btn btn-success btn-sm ms-2" onclick="addToCart({{ item.id }}, '{{ item.name|escapejs }}', {{ item.price }})">Add</button>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted">No items in this category.</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </div>
+    <div class="cart-backdrop" id="cartBackdrop" onclick="hideCart()"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <h4>Your Order</h4>
+        <form id="orderForm">
+            <div id="cartItems"></div>
+            <div class="mb-3 mt-3">
+                <label for="tableNumber" class="form-label">Table Number</label>
+                <input type="text" class="form-control" id="tableNumber" name="table_number" required>
+            </div>
+            <div class="mb-3">
+                <b>Total: $<span id="cartTotal">0.00</span></b>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Submit Order</button>
+            <button type="button" class="btn btn-link w-100 mt-2" onclick="hideCart()">Cancel</button>
+        </form>
+    </div>
+    <div class="modal fade" id="orderSuccessModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Submitted</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Your order has been placed! Thank you.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    let cart = [];
+    function addToCart(id, name, price) {
+        const qty = parseInt(document.getElementById('qty-' + id).value) || 1;
+        const existing = cart.find(i => i.id === id);
+        if (existing) {
+            existing.qty += qty;
+        } else {
+            cart.push({id, name, price, qty});
+        }
+        updateCart();
+    }
+    function updateCart() {
+        document.getElementById('cartCount').innerText = cart.reduce((a, b) => a + b.qty, 0);
+        let html = '';
+        let total = 0;
+        cart.forEach(item => {
+            html += `<div class='d-flex justify-content-between align-items-center mb-2'>
+                <div>${item.name} x ${item.qty}</div>
+                <div>$${(item.price * item.qty).toFixed(2)} <button class='btn btn-sm btn-danger ms-2' onclick='removeFromCart(${item.id})'>&times;</button></div>
+            </div>`;
+            total += item.price * item.qty;
+        });
+        if (cart.length === 0) html = '<div class="text-muted">No items in cart.</div>';
+        document.getElementById('cartItems').innerHTML = html;
+        document.getElementById('cartTotal').innerText = total.toFixed(2);
+    }
+    function removeFromCart(id) {
+        cart = cart.filter(i => i.id !== id);
+        updateCart();
+    }
+    function showCart() {
+        document.getElementById('cartSidebar').classList.add('active');
+        document.getElementById('cartBackdrop').classList.add('active');
+        updateCart();
+    }
+    function hideCart() {
+        document.getElementById('cartSidebar').classList.remove('active');
+        document.getElementById('cartBackdrop').classList.remove('active');
+    }
+    document.getElementById('orderForm').onsubmit = function(e) {
+        e.preventDefault();
+        if (cart.length === 0) return alert('Cart is empty!');
+        const tableNumber = document.getElementById('tableNumber').value;
+        fetch(window.location.pathname + 'order/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                table_number: tableNumber,
+                items: cart
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                cart = [];
+                updateCart();
+                hideCart();
+                new bootstrap.Modal(document.getElementById('orderSuccessModal')).show();
+            } else {
+                alert('Error: ' + (data.error || 'Could not submit order.'));
+            }
+        });
+    };
+    </script>
+</body>
+</html> 

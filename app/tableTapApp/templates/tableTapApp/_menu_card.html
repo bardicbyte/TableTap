@@ -1,0 +1,23 @@
+<div class="card menu-card" style="cursor:pointer;" onclick="openMenuDetail({{ menu.id }})">
+    <div class="card-body">
+        <span class="menu-status {% if menu.is_active %}status-active{% else %}status-inactive{% endif %}">
+            {{ menu.is_active|yesno:"Active,Inactive" }}
+        </span>
+        <h5 class="card-title">{{ menu.name }}</h5>
+        <p class="card-text">{{ menu.description|default:"No description" }}</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Last updated: {{ menu.updated_at|date:"M d, Y" }}</small>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); editMenu({{ menu.id }})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteMenu({{ menu.id }})">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation(); showQrModal({{ menu.id }}, '{{ menu.name|escapejs }}')">
+                    <i class="fas fa-qrcode"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div> 

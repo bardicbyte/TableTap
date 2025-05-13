@@ -17,8 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('tabletap/', include('tableTapApp.urls')),
-    path('accounts/', include('accounts.urls')),
+    path('', include('tableTapApp.urls', namespace='tableTapApp')),
+    path('accounts/', include('accounts.urls', namespace='accounts')),
 ]
