@@ -1,23 +1,53 @@
 {% extends "base.html" %}
+{% block body_class %}login-bg{% endblock %}
 {% block content %}
-<div class="auth-card">
-    <h2 class="text-center mb-4">Welcome Back</h2>
-    <form method="post">
-        {% csrf_token %}
-        {% for field in form %}
-            <div class="mb-3">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field.errors }}
-                {{ field|default:"form-control" }}
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center p-0">
+    <div class="row w-100" style="min-height: 80vh;">
+        <!-- Left: Image with overlay -->
+        <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center p-0 bg-dark position-relative" style="background: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80') center center/cover no-repeat;">
+            <div class="w-100 h-100 position-absolute top-0 start-0" style="background: rgba(44,62,80,0.6);"></div>
+            <div class="position-relative text-center w-100">
+                <h1 class="display-3 fw-bold text-white mb-3" style="letter-spacing: 2px;">TableTap</h1>
+                <p class="lead text-white-50">Seamless Table Reservations & Restaurant Management</p>
             </div>
-        {% endfor %}
-        <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary">Sign In</button>
         </div>
-        <input type="hidden" name="next" value="{% url 'accounts:dashboard' %}" />
-    </form>
-    <div class="text-center mt-3">
-        <p>Don't have an account? <a href="{% url 'accounts:sign_up' %}" class="link-light">Sign up</a></p>
+        <!-- Right: Login Form -->
+        <div class="col-md-6 d-flex align-items-center justify-content-center bg-light p-0">
+            <div class="card shadow p-4 w-100" style="max-width: 400px;">
+                <h2 class="text-center mb-4">Welcome Back</h2>
+                <!-- Social Login Buttons -->
+                <div class="d-grid gap-2 mb-3">
+                    <button class="btn btn-outline-dark d-flex align-items-center justify-content-center mb-2" type="button"><i class="fab fa-google me-2"></i> Sign in with Google</button>
+                    <button class="btn btn-outline-primary d-flex align-items-center justify-content-center mb-2" type="button"><i class="fab fa-facebook-f me-2"></i> Sign in with Facebook</button>
+                    <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center" type="button"><i class="fab fa-apple me-2"></i> Sign in with Apple</button>
+                </div>
+                <div class="text-center mb-3 text-muted">or</div>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field.errors }}
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Sign In</button>
+                    </div>
+                    <input type="hidden" name="next" value="{% url 'tableTapApp:menu_management' %}" />
+                </form>
+                <div class="text-center mt-3">
+                    <p>Don't have an account? <a href="{% url 'accounts:sign_up' %}" class="link-primary">Sign up</a></p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock content %}
+{% block extra_css %}
+<style>
+.login-bg {
+    background: #f8f9fa;
+}
+</style>
+{% endblock %}

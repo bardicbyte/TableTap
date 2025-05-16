@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,7 @@ SECRET_KEY = 'django-insecure-k1d8$nql_6%6s^m-p5cw9(_t^72pe)w&)a&0q5pta5ym9o!7pa
 DEBUG = True
 
 ALLOWED_HOSTS = ['infs3202-81f19561.uqcloud.net', 'localhost', '127.0.0.1']
-
+LOGOUT_REDIRECT_URL = '/'
 
 # Application definition
 
@@ -57,7 +58,7 @@ ROOT_URLCONF = 'tableTap.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

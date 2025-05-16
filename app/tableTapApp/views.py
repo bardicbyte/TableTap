@@ -15,8 +15,18 @@ def index(request):
 
 @login_required
 def menu_management(request):
-    # Get all menus for the current user's business
     business = get_object_or_404(Business, owner=request.user)
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        is_active = request.POST.get('is_active') == 'on'
+        Menus.objects.create(
+            name=name,
+            description=description,
+            is_active=is_active,
+            business=business
+        )
+        return redirect('tableTapApp:menu_management')
     menus = Menus.objects.filter(business=business)
     return render(request, 'tableTapApp/menu_management.html', {'menus': menus})
 
@@ -35,7 +45,7 @@ def create_menu(request):
         business=business
     )
     
-    return redirect('menu_management')
+    return redirect('tableTapApp:menu_management')
 
 @login_required
 def get_menu(request, menu_id):
@@ -60,7 +70,7 @@ def update_menu(request, menu_id):
     menu.is_active = request.POST.get('is_active') == 'on'
     menu.save()
     
-    return redirect('menu_management')
+    return redirect('tableTapApp:menu_management')
 
 @login_required
 @require_POST

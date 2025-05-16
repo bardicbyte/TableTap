@@ -1,5 +1,8 @@
 <div class="card menu-card" style="cursor:pointer;" onclick="openMenuDetail({{ menu.id }})">
     <div class="card-body">
+        {% if menu.image_url %}
+        <img src="{{ menu.image_url }}" class="card-img-top mb-3" alt="{{ menu.name }}" style="max-height: 200px; object-fit: cover;">
+        {% endif %}
         <span class="menu-status {% if menu.is_active %}status-active{% else %}status-inactive{% endif %}">
             {{ menu.is_active|yesno:"Active,Inactive" }}
         </span>
